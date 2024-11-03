@@ -172,7 +172,7 @@ mod avltree_delete {
         //
         // After deleting 1:
         // _
-        let mut tree = AvlTree::new();
+        let mut tree: AvlTree<i32, i32> = AvlTree::new();
         tree.insert(1, 1);
         check_health(&tree);
         tree.remove(&1);

@@ -3,7 +3,7 @@ mod avltree_insert {
     use crate::{
         tests::{
             avl_tree_health::check_health,
-            utils::{assert_tree_contains, test_range, to_key_values},
+            utils::{assert_tree_contains, test_range},
         },
         AvlTree,
     };

@@ -58,13 +58,13 @@ The iterator implements the standard rust iterator: it provides operations like 
 The range is default in rust and can have inclusive or exclusive bounds.
 ```rust
 for (key, value, next_key) in tree.range(dec!(1)..dec!(10)) {
-    info!("key: {}, value: {}", key, value);
+    println!("key: {}, value: {}", key, value);
 }
 ```
 gives you all values for the keys between 1 and 10 ascending and excluding 10.
 ```rust
 for (key, value, next_key) in tree.range_back(Excluded(dec!(1)), Included(dec!(10))) {
-    info!("key: {}, value: {}", key, value);
+    println!("key: {}, value: {}", key, value);
 }
 ```
 gives you all values for the keys between 1 and 10 descending and excluding 1.
@@ -77,7 +77,7 @@ tree.range_mut(dec!(1)..dec!(10)).for_each(|(key, value, next_key): (&K, &mut V,
     *value=String::from("mutated");
 }
 for (key, value) in tree.range(dec!(1)..dec!(10)) {
-    info!("key: {}, value: {}", key, value);
+    println!("key: {}, value: {}", key, value);
 }
 ```
 gives 10 times "mutated" as output.
@@ -87,7 +87,7 @@ Analogue to the `range` method the `range_back_mut` method gives you a descendin
 To remove a key value pair from the tree you can use the `remove` method:
 ```rust
 let value = tree.remove(&dec!(1));
-info!("{}", value);
+println!("{}", value);
 ```
 The method returns the value that was removed from the tree. 
 None is returned, if the key is not present in the tree.

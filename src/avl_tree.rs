@@ -14,14 +14,14 @@ use std::ops::{Bound, RangeBounds};
 /// If the balance factor is greater than 1 or smaller than -1 the tree is unbalanced.
 ///
 #[derive(Debug, Clone)]
-pub struct AvlTree<K: Eq + Ord + Hash, V> {
+pub struct AvlTree<K: Eq + PartialOrd + Hash, V> {
     /// The root of the tree.
     pub(crate) root: Option<K>,
     /// The store of the tree, the node stores the key, value, and navigation pointers in the tree, they are more explained in the Node struct.
     store: HashMap<K, Node<K, V>>,
 }
 
-impl<K: Clone + Eq + Ord + Hash, V: Clone> AvlTree<K, V> {
+impl<K: Clone + Eq + PartialOrd + Hash, V: Clone> AvlTree<K, V> {
     /// Creates an empty `AvlTree`.
     pub fn new() -> Self {
         AvlTree {
@@ -358,7 +358,7 @@ impl<K: Clone + Eq + Ord + Hash, V: Clone> AvlTree<K, V> {
         }
         match parent {
             Some(parent_key) => {
-                let dir = Direction::from_ordering(key.cmp(&parent_key))
+                let dir = Direction::from_ordering(key.partial_cmp(&parent_key).expect("Incomparable keys"))
                     .expect("Parent has to be different");
                 self.insert_node_and_adjust_pointers(&parent_key, key, value, dir);
                 Some((parent_key, dir))
@@ -450,11 +450,12 @@ impl<K: Clone + Eq + Ord + Hash, V: Clone> AvlTree<K, V> {
 
         // Find the prev and next of the new node.
         let (prev, next) = match other_neighbour.clone() {
-            Some(neighbour) => {
-                let min_key = parent_key.clone().min(neighbour.clone());
-                let max_key = parent_key.clone().max(neighbour);
-                (Some(min_key), Some(max_key))
-            }
+            Some(neighbour) => 
+                match parent_key.le(&neighbour){
+                        true => (Some(parent_key.clone()), Some(neighbour)),
+                        false => (Some(neighbour), Some(parent_key.clone()))
+                },
+            
             None => match dir {
                 Direction::Left => (None, Some(parent_key.clone())),
                 Direction::Right => (Some(parent_key.clone()), None),
@@ -532,7 +533,7 @@ impl<K: Clone + Eq + Ord + Hash, V: Clone> AvlTree<K, V> {
     ///       the parent of delete node, or the replacement node (if delete node was replaced).
     ///       `None` if the node had no parent (i.e., it was the root).
     ///     * A boolean indicating if the subtree was shortened as a result of the deletion.
-    pub(crate) fn rewire_tree_for_delete(
+    fn rewire_tree_for_delete(
         &mut self,
         del_node_key: &K,
     ) -> (Option<(K, Direction)>, bool) {
@@ -1043,7 +1044,9 @@ impl<K: Clone + Eq + Ord + Hash, V: Clone> AvlTree<K, V> {
         });
         parent
     }
+
 }
+
 
 #[derive(Debug, Clone)]
 pub(crate) struct Node<K, V> {
@@ -1065,7 +1068,7 @@ pub(crate) struct Node<K, V> {
     pub(crate) balance_factor: i32,
 }
 
-impl<K: Clone + Eq + Ord, V> Node<K, V> {
+impl<K: Clone + Eq + PartialOrd, V> Node<K, V> {
     /// Change the pointer of thechild of this node in the given direction
     fn set_child(&mut self, direction: Direction, child: Option<K>) {
         match direction {
@@ -1099,7 +1102,7 @@ impl<K: Clone + Eq + Ord, V> Node<K, V> {
 
     /// Get the child of this node in the given direction
     fn get_child_in_key_direction(&self, other_key: &K) -> Option<Option<&K>> {
-        match self.key.cmp(other_key) {
+        match self.key.partial_cmp(other_key).expect("Incomparable keys") {
             Greater => Some(self.left_child.as_ref()),
             Equal => None,
             Less => Some(self.right_child.as_ref()),
@@ -1145,14 +1148,14 @@ impl<K: Clone + Eq + Ord, V> Node<K, V> {
     /// Returns `Some(Direction)` indicating whether this node is to the left or right of its parent, or `None` if there's no parent.
     fn direction_to_parent(&self) -> Option<Direction> {
         self.parent.as_ref().map(|parent| {
-            Direction::from_ordering(parent.cmp(&self.key)).expect("Nodes should be unequal")
+            Direction::from_ordering(parent.partial_cmp(&self.key).expect("Incomparable keys")).expect("Nodes should be unequal")
         })
     }
 
     /// Determines the direction of another node relative to this node.
     /// Returns `Some(Direction)` indicating whether the other node is to the left or right of this node.
     fn direction_from_other(&self, other: K) -> Option<Direction> {
-        Some(Direction::from_ordering(other.cmp(&self.key)).expect("Nodes should be unequal"))
+        Some(Direction::from_ordering(other.partial_cmp(&self.key).expect("Incomparable keys")).expect("Nodes should be unequal"))
     }
 
     /// Retrieves the next node's key in the linked list in the specified direction.
@@ -1238,7 +1241,7 @@ impl<K: Clone + Hash, V> NodeIterator<'_, K, V> {
     }
 }
 
-impl<'a, K: Hash + Clone + Ord + Eq, V: Clone> Iterator for NodeIterator<'a, K, V> {
+impl<'a, K: Hash + Clone + PartialOrd + Eq, V: Clone> Iterator for NodeIterator<'a, K, V> {
     type Item = (K, V, Option<K>);
 
     /// Advances the iterator to the next node and returns the value.
@@ -1276,7 +1279,7 @@ pub enum IterMutControl {
     Break,
 }
 
-impl<'a, K: Clone + Hash + Ord + Eq, V: Clone> NodeIteratorMut<'a, K, V> {
+impl<'a, K: Clone + Hash + PartialOrd + Eq, V: Clone> NodeIteratorMut<'a, K, V> {
     /// Calls the provided function on each value in the iterator.
     ///
     /// The iterator moves in the specified direction. If the next node in that direction
@@ -1312,7 +1315,7 @@ trait WithinBound<K> {
     fn within_bound(&self, key: &K, direction: Direction) -> bool;
 }
 
-impl<K: Ord> WithinBound<K> for Bound<&K> {
+impl<K: PartialOrd> WithinBound<K> for Bound<&K> {
     /// Determines if the key lies within the specified boundary.
     ///
     /// - `key`: The key to check against.
@@ -1333,6 +1336,7 @@ impl<K: Ord> WithinBound<K> for Bound<&K> {
             },
         }
     }
+
 }
 
 #[cfg(test)]
@@ -1340,14 +1344,14 @@ mod avltree_delete {
     use super::*;
     use std::fmt::{Debug, Display};
     use std::ops::Bound::{Excluded, Included};
-    pub fn check_health<K: Hash + Ord + Clone + Debug + Display, V: Clone>(
+    pub fn check_health<K: Hash + Eq+ PartialOrd + Clone + Debug + Display, V: Clone>(
         tree: &mut AvlTree<K, V>,
     ) {
         let root = tree.root.clone();
         check_health_recursive(tree, root.as_ref(), true);
     }
 
-    fn check_health_recursive<K: Clone + Hash + Ord + Debug + Display, V: Clone>(
+    fn check_health_recursive<K: Clone + Eq + Hash + PartialOrd + Debug + Display, V: Clone>(
         tree: &mut AvlTree<K, V>,
         key: Option<&K>,
         panic: bool,

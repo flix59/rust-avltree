@@ -32,7 +32,7 @@ mod avltree_range {
 
     #[test]
     fn start_included_end_excluded() {
-        let mut tree = tree_with_initial_data((1..5).collect());
+        let tree = tree_with_initial_data((1..5).collect());
         assert_tree_range_contains(&tree, 1..5, vec![(1, 1), (2, 2), (3, 3), (4, 4)]);
     }
 
@@ -67,7 +67,7 @@ mod avltree_range {
         ]);
         assert_tree_range_back_contains(
             &tree,
-            (i32::MIN..i32::MAX),
+            i32::MIN..i32::MAX,
             vec![
                 (54, 54),
                 (53, 53),
@@ -149,7 +149,7 @@ mod avltree_range {
 
     #[test]
     fn test_range_only_contains_range() {
-        let mut tree = tree_with_initial_data((10..30).collect());
+        let tree = tree_with_initial_data((10..30).collect());
 
         let output: Vec<(i32, i32)> = tree.range(15..25).map(key_value).collect();
         assert_eq!(
@@ -211,7 +211,7 @@ mod avltree_range {
 
     #[test]
     fn test_range_lower_bound_not_in_tree() {
-        let mut tree = tree_with_initial_data(vec![10, 12, 14, 16]);
+        let tree = tree_with_initial_data(vec![10, 12, 14, 16]);
         let output: Vec<(i32, i32)> = tree
             .range((Included(11), Included(15)))
             .map(key_value)
@@ -231,7 +231,7 @@ mod avltree_range {
 
     #[test]
     fn test_range_only_contains_range_first_included() {
-        let mut tree = tree_with_initial_data((10..30).collect());
+        let tree = tree_with_initial_data((10..30).collect());
 
         let output: Vec<(i32, i32)> = tree
             .range((Included(9), Included(10)))
@@ -260,7 +260,7 @@ mod avltree_range {
 
     #[test]
     fn test_range_only_contains_range_first_excluded() {
-        let mut tree = tree_with_initial_data((10..30).collect());
+        let tree = tree_with_initial_data((10..30).collect());
 
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(9), Excluded(10)))

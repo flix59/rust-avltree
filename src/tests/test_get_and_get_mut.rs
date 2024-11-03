@@ -1,10 +1,9 @@
 #[cfg(test)]
 mod get_and_get_mut {
-    use std::process::Output;
 
     use crate::{tests::avl_tree_health::check_health, AvlTree};
     fn update_value(tree: &mut AvlTree<i32, i32>, key: i32, new_value: i32) -> Option<i32> {
-        let mut test = tree.get_mut(&key)?;
+        let test = tree.get_mut(&key)?;
         let old_value = test.clone();
         *test = new_value;
         Some(old_value)
