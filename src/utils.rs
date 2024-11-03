@@ -1,11 +1,10 @@
-use std::fmt::{Debug, Display};
 use crate::avl_tree::AvlTree;
 use std::collections::{HashMap, VecDeque};
+use std::fmt::{Debug, Display};
 
 use std::hash::Hash;
 
-
-pub fn print_tree<K: Debug + Display + Hash + PartialOrd + Eq+ Clone, V: Clone>(
+pub fn print_tree<K: Debug + Display + Hash + PartialOrd + Eq + Clone, V: Clone>(
     tree: &mut AvlTree<K, V>,
     place_holder: K,
 ) {

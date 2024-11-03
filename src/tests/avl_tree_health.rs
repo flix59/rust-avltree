@@ -4,7 +4,9 @@ use std::hash::Hash;
 use crate::avl_tree::AvlTree;
 
 // Check if tree is correctly balanced
-pub fn check_health<K: Hash + PartialOrd + Eq + Clone + Debug + Display, V: Clone>(tree: &AvlTree<K, V>) {
+pub fn check_health<K: Hash + PartialOrd + Eq + Clone + Debug + Display, V: Clone>(
+    tree: &AvlTree<K, V>,
+) {
     let root = tree.root.clone();
     check_health_recursive(tree, root.as_ref(), true);
 }
