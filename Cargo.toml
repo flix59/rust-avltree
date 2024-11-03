@@ -1,0 +1,14 @@
+[package]
+name = "rust_avltree"
+version = "1.2.0"
+edition = "2021"
+license = "MIT"
+description = "AvlTree implementation in Scrypto with KVStore"
+repository = "https://github.com/ociswap/scrypto-avltree"
+
+[dependencies]
+
+
+[workspace]
+# Set the package crate as its own empty workspace, to hide it from any potential ancestor workspace
+# Remove this [workspace] section if you intend the package to be part of a Cargo workspace
