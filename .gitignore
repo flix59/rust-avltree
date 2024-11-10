@@ -14,3 +14,5 @@ target/
 *.lock
 
 integration_tests/plot_costs/data/
+
+.vscode/
