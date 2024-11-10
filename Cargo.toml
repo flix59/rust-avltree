@@ -4,7 +4,7 @@ version = "1.2.0"
 edition = "2021"
 license = "MIT"
 description = "AvlTree implementation in Scrypto with KVStore"
-repository = "https://github.com/ociswap/scrypto-avltree"
+repository = "https://github.com/flix59/rust-avltree"
 
 [dependencies]
 
