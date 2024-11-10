@@ -6,7 +6,6 @@ mod avltree_range {
             avl_tree_health::check_health,
             utils::{
                 assert_tree_contains, assert_tree_range_back_contains, assert_tree_range_contains,
-                key_value,
             },
         },
         AvlTree, IterMutControl,
@@ -108,7 +107,7 @@ mod avltree_range {
 
         let output: Vec<(i32, i32)> = tree
             .range_back((Included(15), Included(25)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(
             output,
@@ -129,7 +128,7 @@ mod avltree_range {
 
         let output: Vec<(i32, i32)> = tree
             .range_back((Excluded(15), Excluded(25)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(
             output,
@@ -151,7 +150,7 @@ mod avltree_range {
     fn test_range_only_contains_range() {
         let tree = tree_with_initial_data((10..30).collect());
 
-        let output: Vec<(i32, i32)> = tree.range(15..25).map(key_value).collect();
+        let output: Vec<(i32, i32)> = tree.range(15..25).collect();
         assert_eq!(
             output,
             vec![
@@ -170,7 +169,7 @@ mod avltree_range {
 
         let output: Vec<(i32, i32)> = tree
             .range((Included(15), Included(25)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(
             output,
@@ -191,7 +190,7 @@ mod avltree_range {
 
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(15), Excluded(25)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(
             output,
@@ -214,17 +213,17 @@ mod avltree_range {
         let tree = tree_with_initial_data(vec![10, 12, 14, 16]);
         let output: Vec<(i32, i32)> = tree
             .range((Included(11), Included(15)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(12, 12), (14, 14)]);
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(11), Excluded(16)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(12, 12), (14, 14)]);
         let output: Vec<(i32, i32)> = tree
             .range((Included(11), Included(16)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(12, 12), (14, 14), (16, 16)]);
     }
@@ -235,25 +234,25 @@ mod avltree_range {
 
         let output: Vec<(i32, i32)> = tree
             .range((Included(9), Included(10)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(10, 10)]);
 
         let output: Vec<(i32, i32)> = tree
             .range((Included(9), Included(11)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(10, 10), (11, 11)]);
 
         let output: Vec<(i32, i32)> = tree
             .range((Included(10), Included(11)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(10, 10), (11, 11)]);
 
         let output: Vec<(i32, i32)> = tree
             .range((Included(10), Included(12)))
-            .map(key_value)
+            
             .collect();
         assert_eq!(output, vec![(10, 10), (11, 11), (12, 12)]);
     }
@@ -264,25 +263,21 @@ mod avltree_range {
 
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(9), Excluded(10)))
-            .map(key_value)
             .collect();
         assert_eq!(output, vec![]);
 
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(9), Excluded(11)))
-            .map(key_value)
             .collect();
         assert_eq!(output, vec![(10, 10)]);
 
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(10), Excluded(11)))
-            .map(key_value)
             .collect();
         assert_eq!(output, vec![]);
 
         let output: Vec<(i32, i32)> = tree
             .range((Excluded(10), Excluded(12)))
-            .map(key_value)
             .collect();
         assert_eq!(output, vec![(11, 11)]);
     }
@@ -742,7 +737,7 @@ mod avltree_range {
         let mut tree = tree_with_initial_data((10..30).collect());
 
         tree.range_mut(15..25)
-            .for_each(|(_, value, _): (&i32, &mut i32, Option<i32>)| {
+            .for_each(|(_, value): (&i32, &mut i32)| {
                 *value = -1;
                 return IterMutControl::Continue;
             });
@@ -774,7 +769,7 @@ mod avltree_range {
         let mut tree = tree_with_initial_data((10..30).collect());
         let mut count = 0;
         tree.range_mut(15..25)
-            .for_each(|(_, value, _): (&i32, &mut i32, Option<i32>)| {
+            .for_each(|(_, value): (&i32, &mut i32)| {
                 *value = -1;
                 count += 1;
                 return if count < 5 {

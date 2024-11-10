@@ -3,9 +3,6 @@ use std::ops::RangeBounds;
 
 use crate::tests::avl_tree_health::check_health;
 use crate::AvlTree;
-pub(crate) fn key_value(tuple: (i32, i32, Option<i32>)) -> (i32, i32) {
-    (tuple.0.clone(), tuple.1.clone())
-}
 pub(crate) fn test_range(mut vector: Vec<i32>, to_delete: Vec<i32>) {
     println!("to_delete: {:?}", to_delete);
     println!("vector: {:?}", vector);
@@ -44,7 +41,7 @@ pub(crate) fn assert_tree_range_contains<R: RangeBounds<i32>>(
     range: R,
     expected_values: Vec<(i32, i32)>,
 ) {
-    let all_elements_in_tree: Vec<(i32, i32)> = tree.range(range).map(key_value).collect();
+    let all_elements_in_tree: Vec<(i32, i32)> = tree.range(range).collect();
     assert_eq!(all_elements_in_tree, expected_values);
 }
 pub(crate) fn assert_tree_range_back_contains<R: RangeBounds<i32>>(
@@ -52,6 +49,6 @@ pub(crate) fn assert_tree_range_back_contains<R: RangeBounds<i32>>(
     range: R,
     expected_values: Vec<(i32, i32)>,
 ) {
-    let all_elements_in_tree: Vec<(i32, i32)> = tree.range_back(range).map(key_value).collect();
+    let all_elements_in_tree: Vec<(i32, i32)> = tree.range_back(range).collect();
     assert_eq!(all_elements_in_tree, expected_values);
 }

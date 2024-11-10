@@ -1242,7 +1242,7 @@ impl<K: Clone + Hash, V> NodeIterator<'_, K, V> {
 }
 
 impl<'a, K: Hash + Clone + PartialOrd + Eq, V: Clone> Iterator for NodeIterator<'a, K, V> {
-    type Item = (K, V, Option<K>);
+    type Item = (K, V);
 
     /// Advances the iterator to the next node and returns the value.
     ///
@@ -1261,7 +1261,7 @@ impl<'a, K: Hash + Clone + PartialOrd + Eq, V: Clone> Iterator for NodeIterator<
             Some(true) => next_key,
             _ => None,
         };
-        Some((current_key, node.value.clone(), self.current.clone()))
+        Some((current_key, node.value.clone()))
     }
 }
 
@@ -1291,7 +1291,7 @@ impl<'a, K: Clone + Hash + PartialOrd + Eq, V: Clone> NodeIteratorMut<'a, K, V> 
     /// - `function`: The function to call on each value.
     pub fn for_each(
         &mut self,
-        mut function: impl FnMut((&K, &mut V, Option<K>)) -> IterMutControl,
+        mut function: impl FnMut((&K, &mut V)) -> IterMutControl,
     ) {
         while let Some(key) = self.current.clone() {
             let node = self.store.get_mut(&key).expect("Node not found");
@@ -1303,7 +1303,7 @@ impl<'a, K: Clone + Hash + PartialOrd + Eq, V: Clone> NodeIteratorMut<'a, K, V> 
                 Some(true) => next,
                 _ => None,
             };
-            match function((&key, &mut node.value, self.current.clone())) {
+            match function((&key, &mut node.value)) {
                 IterMutControl::Continue => (),
                 IterMutControl::Break => break,
             }
@@ -1856,17 +1856,17 @@ mod avltree_delete {
     #[test]
     fn test_range_lower_bound_not_in_tree() {
         let tree = initialize_with_data(vec![10, 12, 14, 16]);
-        let output: Vec<(i32, i32, Option<i32>)> =
+        let output: Vec<(i32, i32)> =
             tree.range((Included(11), Included(15))).collect();
-        assert_eq!(output, vec![(12, 12, Some(14)), (14, 14, None)]);
-        let output: Vec<(i32, i32, Option<i32>)> =
+        assert_eq!(output, vec![(12, 12), (14, 14)]);
+        let output: Vec<(i32, i32)> =
             tree.range((Excluded(11), Excluded(16))).collect();
-        assert_eq!(output, vec![(12, 12, Some(14)), (14, 14, None)]);
-        let output: Vec<(i32, i32, Option<i32>)> =
+        assert_eq!(output, vec![(12, 12), (14, 14)]);
+        let output: Vec<(i32, i32)> =
             tree.range((Included(11), Included(16))).collect();
         assert_eq!(
             output,
-            vec![(12, 12, Some(14)), (14, 14, Some(16)), (16, 16, None)]
+            vec![(12, 12), (14, 14), (16, 16)]
         );
     }
 
@@ -1874,23 +1874,23 @@ mod avltree_delete {
     fn test_range_only_contains_range_first_included() {
         let tree = initialize_with_data((10..30).collect());
 
-        let output: Vec<(i32, i32, Option<i32>)> =
+        let output: Vec<(i32, i32)> =
             tree.range((Included(9), Included(10))).collect();
-        assert_eq!(output, vec![(10, 10, None)]);
+        assert_eq!(output, vec![(10, 10)]);
 
-        let output: Vec<(i32, i32, Option<i32>)> =
+        let output: Vec<(i32, i32)> =
             tree.range((Included(9), Included(11))).collect();
-        assert_eq!(output, vec![(10, 10, Some(11)), (11, 11, None)]);
+        assert_eq!(output, vec![(10, 10), (11, 11)]);
 
-        let output: Vec<(i32, i32, Option<i32>)> =
+        let output: Vec<(i32, i32)> =
             tree.range((Included(10), Included(11))).collect();
-        assert_eq!(output, vec![(10, 10, Some(11)), (11, 11, None)]);
+        assert_eq!(output, vec![(10, 10), (11, 11)]);
 
-        let output: Vec<(i32, i32, Option<i32>)> =
+        let output: Vec<(i32, i32)> =
             tree.range((Included(10), Included(12))).collect();
         assert_eq!(
             output,
-            vec![(10, 10, Some(11)), (11, 11, Some(12)), (12, 12, None)]
+            vec![(10, 10), (11, 11), (12, 12)]
         );
     }
 
@@ -1898,24 +1898,24 @@ mod avltree_delete {
     fn test_range_only_contains_range_first_excluded() {
         let tree = initialize_with_data((10..30).collect());
 
-        let output: Vec<(i32, i32, Option<i32>)> =
+        let output: Vec<(i32, i32)> =
             tree.range((Excluded(9), Excluded(10))).collect();
         assert_eq!(output, vec![]);
 
         let output = tree
             .range((Excluded(9), Excluded(11)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(output, vec![(10, 10, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(output, vec![(10, 10)]);
 
         let receipt = tree
             .range((Excluded(10), Excluded(11)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
+            .collect::<Vec<(i32, i32)>>();
         assert_eq!(receipt, vec![]);
 
         let receipt = tree
             .range((Excluded(10), Excluded(12)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(receipt, vec![(11, 11, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(receipt, vec![(11, 11)]);
     }
 
     #[test]
@@ -1924,25 +1924,25 @@ mod avltree_delete {
 
         let output = tree
             .range((Included(29), Included(30)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(output, vec![(29, 29, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(output, vec![(29, 29)]);
 
         let output = tree
             .range((Included(28), Included(29)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(output, vec![(28, 28, Some(29)), (29, 29, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(output, vec![(28, 28), (29, 29)]);
 
         let output = tree
             .range((Included(28), Included(30)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(output, vec![(28, 28, Some(29)), (29, 29, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(output, vec![(28, 28), (29, 29)]);
 
         let output = tree
             .range((Included(27), Included(29)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
+            .collect::<Vec<(i32, i32)>>();
         assert_eq!(
             output,
-            vec![(27, 27, Some(28)), (28, 28, Some(29)), (29, 29, None)]
+            vec![(27, 27), (28, 28), (29, 29)]
         );
     }
     #[test]
@@ -1951,23 +1951,23 @@ mod avltree_delete {
 
         let output = tree
             .range((Excluded(29), Excluded(30)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
+            .collect::<Vec<(i32, i32)>>();
         assert_eq!(output, vec![]);
 
         let output = tree
             .range((Excluded(28), Excluded(29)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
+            .collect::<Vec<(i32, i32)>>();
         assert_eq!(output, vec![]);
 
         let output = tree
             .range((Excluded(28), Excluded(30)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(output, vec![(29, 29, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(output, vec![(29, 29)]);
 
         let output = tree
             .range((Excluded(27), Excluded(29)))
-            .collect::<Vec<(i32, i32, Option<i32>)>>();
-        assert_eq!(output, vec![(28, 28, None)]);
+            .collect::<Vec<(i32, i32)>>();
+        assert_eq!(output, vec![(28, 28)]);
     }
 
     pub fn test_range(mut vector: Vec<i32>, to_delete: Vec<i32>) {
@@ -2003,7 +2003,6 @@ mod avltree_delete {
         let output = avltree
             .range(key1..key2)
             .into_iter()
-            .map(|(k, v, _)| (k, v.clone()))
             .collect::<Vec<(i32, i32)>>();
         assert_eq!(output, output_expected);
     }
